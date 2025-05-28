@@ -20,26 +20,72 @@
     </script>
     <hr>
     <h2 id="timer">00:00:00</h2>
-    <button onclick="iniciar()">Iniciar</button>
+    <div class="controls">
+        <input type="number" id="hours" placeholder="Horas" min="0" max="23">
+        <input type="number" id="minutes" placeholder="Minutos" min="0" max="59">
+        <input type="number" id="seconds" placeholder="Segundos" min="0" max="59">
+    </div>
+    <div class="buttons">
+        <button onclick="iniciar()">Iniciar</button>
+        <button onclick="pausar()">Pausar</button>
+        <button onclick="resetar()">Resetar</button>
+    </div>
     <script>
         let segundos = 0;
-        let intervalo;
-        function formatar(segundos){
-            const h = String(Math.floor(segundos/3600));
-            const m = String(Math.floor((segundos % 3600)/60));
-            const s = String(segundos % 60);
-            return`${h}:${m}:${s}`;
+        let intervalo = null;
+        let tempoInicial = 0;
+
+        function formatar(segundos) {
+            const h = String(Math.floor(segundos/3600)).padStart(2, '0');
+            const m = String(Math.floor((segundos % 3600)/60)).padStart(2, '0');
+            const s = String(segundos % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
         }
-        function atualizarTimer(){
+
+        function atualizarTimer() {
+            if (segundos <= 0) {
+                clearInterval(intervalo);
+                intervalo = null;
+                alert('Tempo esgotado!');
+                return;
+            }
+            segundos--;
             document.getElementById("timer").innerText = formatar(segundos);
         }
-        function iniciar(){
-            if(!intervalo){
-                intervalo = setInterval (() => {
-                    segundos++;
-                    atualizarTimer();
-                }, 1000);
+
+        function iniciar() {
+            if (intervalo) return;
+
+            if (segundos === 0) {
+                const horas = parseInt(document.getElementById('hours').value) || 0;
+                const minutos = parseInt(document.getElementById('minutes').value) || 0;
+                const segs = parseInt(document.getElementById('seconds').value) || 0;
+                
+                segundos = horas * 3600 + minutos * 60 + segs;
+                tempoInicial = segundos;
+                
+                if (segundos === 0) {
+                    alert('Por favor, defina um tempo para a contagem regressiva');
+                    return;
+                }
             }
+
+            document.getElementById("timer").innerText = formatar(segundos);
+            intervalo = setInterval(atualizarTimer, 1000);
+        }
+
+        function pausar() {
+            if (intervalo) {
+                clearInterval(intervalo);
+                intervalo = null;
+            }
+        }
+
+        function resetar() {
+            clearInterval(intervalo);
+            intervalo = null;
+            segundos = tempoInicial;
+            document.getElementById("timer").innerText = formatar(segundos);
         }
     </script>
 </body>
@@ -69,10 +115,31 @@ h2 {
     display: inline-block;
 }
 
+.controls {
+    margin: 20px 0;
+}
+
+.controls input {
+    font-size: 1.2em;
+    padding: 10px;
+    margin: 0 5px;
+    width: 100px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    text-align: center;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
 button {
     font-size: 1.2em;
-    padding: 20px 30px;
-    margin-top: 50px;
+    padding: 15px 25px;
+    margin-top: 20px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
